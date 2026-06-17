@@ -1,16 +1,17 @@
-About AskMyDocs
+About DocuGallery
 
-AskMyDocs was created by Iñigo Jones Arimado Madrigal.
+DocuGallery was created by Iñigo Jones Arimado Madrigal.
 
 Creator: Iñigo Jones Arimado Madrigal
-Role: Developer and creator of AskMyDocs
+Role: Developer and creator of DocuGallery
 Background: Fourth-year BS Information Technology student at Granby Colleges of Science and Technology.
 
 Who made this system?
-This system, AskMyDocs, was built by Iñigo Jones Arimado Madrigal as a personal project. Iñigo Jones Arimado Madrigal is the developer and creator of AskMyDocs.
+This system, DocuGallery, was built by Iñigo Jones Arimado Madrigal as a personal project. Iñigo Jones Arimado Madrigal is the developer and creator of AskMyDocs.
 
-Why AskMyDocs was built:
-AskMyDocs was created to make it easy to upload documents such as PDFs, Word files, and text files, and then ask questions about their content using AI. It combines document retrieval with an AI language model so users can get accurate answers grounded in their own uploaded files, along with a general chat mode for everyday questions when no documents are uploaded.
+Why DocuGallery was built:
+DocuGallery is built on June 15, 2026
+DocuGallery was created to make it easy to upload documents such as PDFs, Word files, and text files, and then ask questions about their content using AI. It combines document retrieval with an AI language model so users can get accurate answers grounded in their own uploaded files, along with a general chat mode for everyday questions when no documents are uploaded.
 
 Contact:
 Email: madrigalinigojones@gmail.com

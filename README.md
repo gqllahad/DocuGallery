@@ -1,4 +1,4 @@
-# Document Q&A System
+# DocuGallery System
 
 Ask questions across your PDF, Word, and text documents using RAG (Retrieval-Augmented Generation).
 

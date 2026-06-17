@@ -17,12 +17,12 @@ from query.generator import ask_stream
 # Page config
 
 st.set_page_config(
-    page_title="AskMyDocs",
+    page_title="DocuGallery",
     page_icon="🗂️",
     layout="wide",
 )
 
-st.title("🗂️ AskMyDocs")
+st.title("🗂️ DocuGallery")
 st.caption("Upload documents, then ask questions about them.")\
     
 groq_client = Groq(api_key=st.secrets["GROQ_API_KEY"])
@@ -34,7 +34,7 @@ groq_client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 # general knowledge
 KNOWLEDGE_BASE_DIR = "knowledge_base"
-KNOWLEDGE_BASE_TAG = "__preloaded__"
+KNOWLEDGE_BASE_TAG = "main__"
 
 def load_knowledge_base():
     if not os.path.exists(KNOWLEDGE_BASE_DIR):
