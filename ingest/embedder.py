@@ -63,10 +63,30 @@ def embed_chunks(chunks: list[dict]) -> None:
     print(f"Done. Collection now has {collection.count()} chunks total.")
 
 
-def delete_document(source_filename: str) -> None:
-    """Remove all chunks belonging to a specific file."""
+# def delete_document(source_filename: str) -> None:
+#     """Remove all chunks belonging to a specific file."""
+#     collection = get_collection()
+#     collection.delete(where={"source": source_filename})
+#     print(f"Deleted all chunks for: {source_filename}")
+
+def delete_document(source_filename: str, session_id: str = None) -> None:
+    """Remove all chunks belonging to a specific file (scoped to a session if given)."""
     collection = get_collection()
-    collection.delete(where={"source": source_filename})
+
+    if session_id:
+        results = collection.get(
+            where={"source": source_filename},
+            include=["metadatas"],
+        )
+        ids_to_delete = [
+            doc_id for doc_id, meta in zip(results["ids"], results["metadatas"])
+            if meta.get("session_id") == session_id or meta.get("session_id") is None
+        ]
+        if ids_to_delete:
+            collection.delete(ids=ids_to_delete)
+    else:
+        collection.delete(where={"source": source_filename})
+
     print(f"Deleted all chunks for: {source_filename}")
 
 
