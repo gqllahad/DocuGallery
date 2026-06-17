@@ -7,8 +7,21 @@ import fitz  # PyMuPDF
 from docx import Document
 from pathlib import Path
 
+HEADER_CHAR_LIMIT = 300
 
-def load_pdf(file_path: str) -> list[dict]:
+def _split_header(text: str, char_limit: int = HEADER_CHAR_LIMIT) -> tuple[str, str]:
+    """Split text into (header_portion, rest) at a clean boundary near char_limit."""
+    if len(text) <= char_limit:
+        return text, ""
+
+    cut = text.rfind("\n", 0, char_limit)
+    if cut == -1:
+        cut = char_limit
+
+    return text[:cut].strip(), text[cut:].strip()
+
+
+def load_pdf(file_path: str) -> list[dict]: 
     """Extract text page-by-page from a PDF."""
     pages = []
     doc = fitz.open(file_path)
@@ -22,6 +35,7 @@ def load_pdf(file_path: str) -> list[dict]:
                     "source": Path(file_path).name,
                     "page": page_num,
                     "file_type": "pdf",
+                    "is_first_page": page_num == 1,
                 }
             })
 
@@ -42,6 +56,7 @@ def load_docx(file_path: str) -> list[dict]:
             "source": Path(file_path).name,
             "page": 1,
             "file_type": "docx",
+            "is_first_page": True,
         }
     }]
 
@@ -56,6 +71,7 @@ def load_txt(file_path: str) -> list[dict]:
             "source": Path(file_path).name,
             "page": 1,
             "file_type": "txt",
+            "is_first_page": True,
         }
     }]
 

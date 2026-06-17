@@ -4,8 +4,10 @@ chunker.py — Splits loaded pages into smaller overlapping chunks.
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+HEADER_CHAR_LIMIT = 300
 
-def chunk_pages(pages: list[dict], chunk_size: int = 500, overlap: int = 80) -> list[dict]:
+
+def chunk_pages(pages: list[dict], chunk_size: int = 600, overlap: int = 80) -> list[dict]:
     """
     Split a list of page dicts into smaller chunks.
 
@@ -28,17 +30,31 @@ def chunk_pages(pages: list[dict], chunk_size: int = 500, overlap: int = 80) -> 
 
     for page in pages:
         raw_chunks = splitter.split_text(page["text"])
+        is_first_page = page["metadata"].get("is_first_page", False)
 
         for i, chunk_text in enumerate(raw_chunks):
             if not chunk_text.strip():
                 continue
+            
+            metadata = {
+                **page["metadata"],
+                "chunk_index": i,
+            }
+            
+            if is_first_page and i == 0:
+                metadata["priority"] = "always"
 
+            # chunks.append({
+            #     "text": chunk_text.strip(),
+            #     "metadata": {
+            #         **page["metadata"],  
+            #         "chunk_index": i,       
+            #     }
+            # })
+            
             chunks.append({
                 "text": chunk_text.strip(),
-                "metadata": {
-                    **page["metadata"],  
-                    "chunk_index": i,       
-                }
+                "metadata": metadata,
             })
 
     print(f"Created {len(chunks)} chunks from {len(pages)} pages")

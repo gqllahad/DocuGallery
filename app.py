@@ -12,6 +12,8 @@ from ingest.embedder import embed_chunks, list_documents, delete_document
 from query.generator import ask_stream
 
 
+
+
 # Page config
 
 st.set_page_config(
@@ -24,6 +26,11 @@ st.title("🗂️ AskMyDocs")
 st.caption("Upload documents, then ask questions about them.")\
     
 groq_client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+
+# if st.button("🧪 TEST RETRIEVAL"):
+#     from query.retriever import retrieve
+#     test_chunks = retrieve("who made this system", session_id=st.session_state.session_id)
+#     st.write("TEST RESULT:", test_chunks)
 
 # general knowledge
 KNOWLEDGE_BASE_DIR = "knowledge_base"
@@ -43,20 +50,13 @@ def load_knowledge_base():
             continue
         filepath = os.path.join(KNOWLEDGE_BASE_DIR, filename)
         try:
-            # pages = load_document(filepath)
-            # for page in pages:
-            #     page["metadata"]["source"] = tagged_name
-            # chunks = chunk_pages(pages)
-            # embed_chunks(chunks)
-            pages = load_document(tmp_path)
-    
+            pages = load_document(filepath)
             for page in pages:
-                page["metadata"]["source"] = uploaded_file.name
-                page["metadata"]["session_id"] = st.session_state.session_id 
-
+                page["metadata"]["source"] = tagged_name
+                page["metadata"]["priority"] = "always"
+                
             chunks = chunk_pages(pages)
             embed_chunks(chunks)
-            st.success(f"✓ {uploaded_file.name}")
         except Exception as e:
             st.warning(f"Could not load knowledge base file {filename}: {e}")
 
@@ -148,36 +148,57 @@ with st.sidebar:
     # except Exception:
     #     st.info("No documents ingested yet.")
     
+    # try:
+    #     docs = list_documents(session_id=st.session_state.session_id)
+    #     has_docs = bool(docs)
+    # except Exception:
+    #     docs = []
+    #     has_docs = False
+    
     try:
         docs = list_documents(session_id=st.session_state.session_id)
-        has_docs = bool(docs)
+        user_docs = [doc for doc in docs if not doc.startswith(KNOWLEDGE_BASE_TAG)]
+        has_docs = bool(docs)    
     except Exception:
         docs = []
+        user_docs = []
         has_docs = False
+        
+    user_docs = [doc for doc in docs if not doc.startswith(KNOWLEDGE_BASE_TAG)]
 
-    if has_docs:
-        for doc in docs:
-    #         col1, col2 = st.columns([4, 1])
-    #         col1.write(f"🗂️ {doc}")
-    #         if col2.button("✕", key=f"del_{doc}", help=f"Remove {doc}"):
-    #             delete_document(doc)
-    #             st.rerun()
-    # else:
-    #     st.info("No documents ingested yet.")
-    
-            if doc.startswith(KNOWLEDGE_BASE_TAG):
-                        display_name = doc.replace(KNOWLEDGE_BASE_TAG, "")
-                        st.write(f"📚 {display_name} *(built-in)*")
-
-            # User uploaded docs
-            else:
-                col1, col2 = st.columns([4, 1])
-                col1.write(f"🗂️ {doc}")
-                if col2.button("✕", key=f"del_{doc}", help=f"Remove {doc}"):
-                    delete_document(doc, session_id=st.session_state.session_id)
-                    st.rerun()
+    if user_docs:
+        for doc in user_docs:
+            col1, col2 = st.columns([4, 1])
+            col1.write(f"🗂️ {doc}")
+            if col2.button("✕", key=f"del_{doc}", help=f"Remove {doc}"):
+                delete_document(doc, session_id=st.session_state.session_id)
+                st.rerun()
     else:
         st.info("No documents ingested yet.")
+
+    # if has_docs:
+    #     for doc in docs:
+    # #         col1, col2 = st.columns([4, 1])
+    # #         col1.write(f"🗂️ {doc}")
+    # #         if col2.button("✕", key=f"del_{doc}", help=f"Remove {doc}"):
+    # #             delete_document(doc)
+    # #             st.rerun()
+    # # else:
+    # #     st.info("No documents ingested yet.")
+    
+    #         if doc.startswith(KNOWLEDGE_BASE_TAG):
+    #                     display_name = doc.replace(KNOWLEDGE_BASE_TAG, "")
+    #                     st.write(f"📚 {display_name} *(built-in)*")
+
+    #         # User uploaded docs
+    #         else:
+    #             col1, col2 = st.columns([4, 1])
+    #             col1.write(f"🗂️ {doc}")
+    #             if col2.button("✕", key=f"del_{doc}", help=f"Remove {doc}"):
+    #                 delete_document(doc, session_id=st.session_state.session_id)
+    #                 st.rerun()
+    # else:
+    #     st.info("No documents ingested yet.")
 
     st.divider()
     if st.button("Clear chat history", use_container_width=True):
@@ -198,8 +219,7 @@ with st.sidebar:
 for i, msg in enumerate(st.session_state.messages): #for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
-        
-         # Per-message "View Sources" button (only for assistant messages with citations)
+
         if msg["role"] == "assistant" and msg.get("citations"):
             toggle_key = f"show_sources_{i}"
             if toggle_key not in st.session_state:
@@ -276,12 +296,21 @@ if question := st.chat_input(placeholder):
         # 📄 DOCUMENT MODE
         if has_docs:
             try:
-                typing_placeholder.empty()
+                full_response = ""
+                for chunk_text in ask_stream(question, st.session_state.chat_history, session_id=st.session_state.session_id):
+                    full_response += chunk_text
+                    typing_placeholder.markdown(full_response + "▌")
                 
-                response_text = st.write_stream(
-                    ask_stream(question, st.session_state.chat_history, session_id=st.session_state.session_id)
-                )
+                typing_placeholder.markdown(full_response)
+                response_text = full_response
                 citations = ask_stream.last_chunks
+                
+                # response_text = st.write_stream(
+                #     ask_stream(question, st.session_state.chat_history, session_id=st.session_state.session_id)
+                # )
+                # citations = ask_stream.last_chunks
+                
+                
                 # st.session_state.last_chunks = citations
 
                 # if citations:
@@ -291,10 +320,14 @@ if question := st.chat_input(placeholder):
                 #                 f"**{c['source']}** — page {c['page']} "
                 #                 f"*(relevance: {c['score']})*\n\n> {c['text'][:300]}..."
                 #             )
+            # except RuntimeError as e:
+            #     response_text = str(e)
+            #     citations = []
+            #     st.error(response_text)
             except RuntimeError as e:
                 response_text = str(e)
                 citations = []
-                st.error(response_text)
+                typing_placeholder.error(response_text)
 
         # General Chat
         else:
@@ -317,12 +350,17 @@ if question := st.chat_input(placeholder):
                         if text:
                             yield text
 
-                typing_placeholder.empty()
-                response_text = st.write_stream(general_chat_stream())
+                full_response = ""
+                for chunk_text in general_chat_stream():
+                    full_response += chunk_text
+                    typing_placeholder.markdown(full_response + "▌")
+                    
+                typing_placeholder.markdown(full_response)
+                response_text = full_response
 
             except Exception as e:
                 response_text = f"Error: {str(e)}"
-                st.error(response_text)
+                typing_placeholder.error(response_text)
 
     # Update history
     st.session_state.messages.append({
@@ -335,3 +373,5 @@ if question := st.chat_input(placeholder):
         {"role": "user", "content": question},
         {"role": "assistant", "content": response_text},
     ])
+    
+    st.rerun()
