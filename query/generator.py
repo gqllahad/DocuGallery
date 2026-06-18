@@ -99,9 +99,6 @@ def ask_stream(question: str, chat_history: list[dict] = None, session_id: str =
     chunks = retrieve(question, session_id=session_id)
     ask_stream.last_chunks = chunks 
 
-    import streamlit as st
-    st.write("DEBUG retrieved sources:", [(c["source"], c["score"]) for c in chunks])
-
     if not chunks:
         ask_stream.last_chunks = []
         yield "I couldn't find relevant information in the uploaded documents."

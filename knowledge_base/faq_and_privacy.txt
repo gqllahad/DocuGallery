@@ -1,0 +1,31 @@
+DocuGallery — Frequently Asked Questions and Privacy Information
+
+How do I upload a document?
+Click "Upload files" in the sidebar, choose one or more files from your computer, then click "Ingest uploaded files." Supported file types are PDF, DOCX, and TXT.
+
+What file types does DocuGallery support?
+DocuGallery supports PDF files, Word documents (DOCX), and plain text files (TXT). Other file types are not currently supported.
+
+How do I ask a question about my uploaded document?
+Once a file is ingested, simply type your question in the chat box at the bottom of the screen. DocuGallery will search your uploaded documents and answer based on their content, with sources cited.
+
+How do I delete a document I uploaded?
+In the sidebar under "Ingested documents," click the small "X" button next to the file name you want to remove. This permanently deletes that document from your session.
+
+What happens if I don't upload any documents?
+If no documents are uploaded, DocuGallery switches to general chat mode and behaves like a regular helpful AI assistant, answering general questions without referencing any specific document.
+
+Can other users see the documents I upload?
+No. Each user's uploaded documents are private to their own session and are not visible to other users of DocuGallery. Documents are isolated per session using a unique session identifier.
+
+Are my documents stored permanently?
+Uploaded documents are stored only for the duration of your session and are used solely to answer your questions. They are not shared, sold, or used for any purpose other than answering your questions within AskMyDocs.
+
+Why does DocuGallery say it couldn't find an answer?
+This happens when the question asked does not match any content in the uploaded documents closely enough. Try rephrasing the question or confirm the relevant document has been uploaded and ingested.
+
+Can DocuGallery edit or modify my uploaded files?
+No. DocuGallery can only read and answer questions about the content of uploaded files. It cannot edit, modify, or save changes back to the original documents.
+
+Does DocuGallery work without uploading any files?
+Yes. DocuGallery includes a general chat mode for everyday questions when no documents are uploaded, in addition to its main document question-and-answer feature.

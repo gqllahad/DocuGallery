@@ -18,19 +18,68 @@ from query.generator import ask_stream
 
 st.set_page_config(
     page_title="DocuGallery",
-    page_icon="🗂️",
+    page_icon="docugallery_logo (2).png",
     layout="wide",
 )
 
-st.title("🗂️ DocuGallery")
+st.markdown("""
+<style>
+
+[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) {
+    flex-direction: row-reverse;
+    text-align: right;
+}
+
+[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) .stMarkdown {
+    text-align: right;
+     color: #FFFFFF;
+}
+
+[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) {
+    background-color: #3B2620;
+    border-radius: 12px;
+    margin-left: 20%;
+}
+
+[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) {
+    background-color: #1A1A1A;
+    border-radius: 12px;
+    margin-right: 20%;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# typing css
+TYPING_INDICATOR_HTML = """
+<div style="display: flex; gap: 4px; padding: 8px 0;">
+  <div class="typing-dot" style="animation-delay: 0s;"></div>
+  <div class="typing-dot" style="animation-delay: 0.2s;"></div>
+  <div class="typing-dot" style="animation-delay: 0.4s;"></div>
+</div>
+<style>
+.typing-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #CC785C;
+    animation: wave 1.2s infinite ease-in-out;
+}
+@keyframes wave {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-6px); opacity: 1; }
+}
+</style>
+"""
+
+col1, col2 = st.columns([1, 8])
+with col1:
+    st.image("docugallery_logo (2).png", width=150)
+with col2:
+    st.title("AskMyDocs")
+    
 st.caption("Upload documents, then ask questions about them.")\
     
 groq_client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-
-# if st.button("🧪 TEST RETRIEVAL"):
-#     from query.retriever import retrieve
-#     test_chunks = retrieve("who made this system", session_id=st.session_state.session_id)
-#     st.write("TEST RESULT:", test_chunks)
 
 # general knowledge
 KNOWLEDGE_BASE_DIR = "knowledge_base"
@@ -75,13 +124,6 @@ if "uploader_key" not in st.session_state:
 
 if "session_id" not in st.session_state:
     st.session_state.session_id = str(uuid.uuid4())
-    
-# if "last_chunks" not in st.session_state:
-#     st.session_state.last_chunks = []
-
-# if "show_sources_panel" not in st.session_state:
-#     st.session_state.show_sources_panel = False
-
 
 # Sidebar: document management
 
@@ -102,7 +144,6 @@ with st.sidebar:
             with st.spinner("Processing..."):
                 all_success = True
                 for uploaded_file in uploaded_files:
-                    # Save to a temporary file
                     suffix = os.path.splitext(uploaded_file.name)[1]
                     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
                         tmp.write(uploaded_file.read())
@@ -112,7 +153,6 @@ with st.sidebar:
                         pages = load_document(tmp_path)
                         
                         for page in pages:
-                            # page["metadata"]["source"] = uploaded_file.name
                              page["metadata"]["source"] = uploaded_file.name
                              page["metadata"]["session_id"] = st.session_state.session_id
 
@@ -132,28 +172,6 @@ with st.sidebar:
     # Ingested documents list
     st.divider()
     st.subheader("Ingested documents")
-
-    # try:
-    #     docs = list_documents()
-    #     has_docs = bool(docs)
-    #     if docs:
-    #         for doc in docs:
-    #             col1, col2 = st.columns([4, 1])
-    #             col1.write(f"🗂️ {doc}")
-    #             if col2.button("✕", key=f"del_{doc}", help=f"Remove {doc}"):
-    #                 delete_document(doc)
-    #                 st.rerun()
-    #     else:
-    #         st.info("No documents ingested yet.")
-    # except Exception:
-    #     st.info("No documents ingested yet.")
-    
-    # try:
-    #     docs = list_documents(session_id=st.session_state.session_id)
-    #     has_docs = bool(docs)
-    # except Exception:
-    #     docs = []
-    #     has_docs = False
     
     try:
         docs = list_documents(session_id=st.session_state.session_id)
@@ -175,30 +193,6 @@ with st.sidebar:
                 st.rerun()
     else:
         st.info("No documents ingested yet.")
-
-    # if has_docs:
-    #     for doc in docs:
-    # #         col1, col2 = st.columns([4, 1])
-    # #         col1.write(f"🗂️ {doc}")
-    # #         if col2.button("✕", key=f"del_{doc}", help=f"Remove {doc}"):
-    # #             delete_document(doc)
-    # #             st.rerun()
-    # # else:
-    # #     st.info("No documents ingested yet.")
-    
-    #         if doc.startswith(KNOWLEDGE_BASE_TAG):
-    #                     display_name = doc.replace(KNOWLEDGE_BASE_TAG, "")
-    #                     st.write(f"📚 {display_name} *(built-in)*")
-
-    #         # User uploaded docs
-    #         else:
-    #             col1, col2 = st.columns([4, 1])
-    #             col1.write(f"🗂️ {doc}")
-    #             if col2.button("✕", key=f"del_{doc}", help=f"Remove {doc}"):
-    #                 delete_document(doc, session_id=st.session_state.session_id)
-    #                 st.rerun()
-    # else:
-    #     st.info("No documents ingested yet.")
 
     st.divider()
     if st.button("Clear chat history", use_container_width=True):
@@ -237,32 +231,7 @@ for i, msg in enumerate(st.session_state.messages): #for msg in st.session_state
                             f"*(relevance: {c['score']})*\n\n> {c['text'][:300]}..."
                         )
 
-        # if "citations" in msg and msg["citations"]:
-        #     with st.expander(f"Sources ({len(msg['citations'])} chunks)"):
-        #         for c in msg["citations"]:
-        #             st.markdown(
-        #                 f"**{c['source']}** — page {c['page']} "
-        #                 f"*(relevance: {c['score']})*\n\n> {c['text'][:300]}..."
-        #             )
 placeholder = "Ask about your documents..." if has_docs else "Ask me anything..."
-
-# if has_docs:
-#     col1, col2 = st.columns([1, 5])
-#     with col1:
-#         if st.button("📎 View Sources", use_container_width=True):
-#             st.session_state.show_sources_panel = not st.session_state.show_sources_panel
-
-#     if st.session_state.show_sources_panel:
-#         with st.container(border=True):
-#             if st.session_state.last_chunks:
-#                 st.caption(f"Sources from your last question ({len(st.session_state.last_chunks)} chunks)")
-#                 for c in st.session_state.last_chunks:
-#                     st.markdown(
-#                         f"**{c['source']}** — page {c['page']} "
-#                         f"*(relevance: {c['score']})*\n\n> {c['text'][:300]}..."
-#                     )
-#             else:
-#                 st.caption("No sources yet — ask a question first.")
 
 if question := st.chat_input(placeholder):
 
@@ -273,57 +242,23 @@ if question := st.chat_input(placeholder):
 
     with st.chat_message("assistant"):
         typing_placeholder = st.empty()
-        typing_placeholder.markdown("● ● ●")
-        # try:
-        #     response_text = st.write_stream(
-        #         ask_stream(question, st.session_state.chat_history)
-        #     )
-        #     citations = ask_stream.last_chunks
-
-        #     if citations:
-        #         with st.expander(f"Sources ({len(citations)} chunks)"):
-        #             for c in citations:
-        #                 st.markdown(
-        #                     f"**{c['source']}** — page {c['page']} "
-        #                     f"*(relevance: {c['score']})*\n\n> {c['text'][:300]}..."
-        #                 )
-
-        # except RuntimeError as e:
-        #     response_text = str(e)
-        #     citations = []
-        #     st.error(response_text)
+        typing_placeholder.markdown(TYPING_INDICATOR_HTML, unsafe_allow_html=True)
         
         # 📄 DOCUMENT MODE
         if has_docs:
             try:
+                time.sleep(0.5)
+                 
                 full_response = ""
                 for chunk_text in ask_stream(question, st.session_state.chat_history, session_id=st.session_state.session_id):
                     full_response += chunk_text
                     typing_placeholder.markdown(full_response + "▌")
+                    time.sleep(0.02)
                 
                 typing_placeholder.markdown(full_response)
                 response_text = full_response
                 citations = ask_stream.last_chunks
                 
-                # response_text = st.write_stream(
-                #     ask_stream(question, st.session_state.chat_history, session_id=st.session_state.session_id)
-                # )
-                # citations = ask_stream.last_chunks
-                
-                
-                # st.session_state.last_chunks = citations
-
-                # if citations:
-                #     with st.expander(f"Sources ({len(citations)} chunks)"):
-                #         for c in citations:
-                #             st.markdown(
-                #                 f"**{c['source']}** — page {c['page']} "
-                #                 f"*(relevance: {c['score']})*\n\n> {c['text'][:300]}..."
-                #             )
-            # except RuntimeError as e:
-            #     response_text = str(e)
-            #     citations = []
-            #     st.error(response_text)
             except RuntimeError as e:
                 response_text = str(e)
                 citations = []
@@ -350,10 +285,13 @@ if question := st.chat_input(placeholder):
                         if text:
                             yield text
 
+                time.sleep(0.5)
+                 
                 full_response = ""
                 for chunk_text in general_chat_stream():
                     full_response += chunk_text
                     typing_placeholder.markdown(full_response + "▌")
+                    time.sleep(0.02)
                     
                 typing_placeholder.markdown(full_response)
                 response_text = full_response
