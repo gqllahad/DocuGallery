@@ -3,6 +3,7 @@ About DocuGallery
 DocuGallery was created by Iñigo Jones Arimado Madrigal.
 
 Creator: Iñigo Jones Arimado Madrigal
+Address: Tanza, Cavite
 Role: Developer and creator of DocuGallery
 Background: Fourth-year BS Information Technology student at Granby Colleges of Science and Technology.
 
