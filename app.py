@@ -11,9 +11,6 @@ from ingest.chunker import chunk_pages
 from ingest.embedder import embed_chunks, list_documents, delete_document
 from query.generator import ask_stream
 
-
-
-
 # Page config
 
 st.set_page_config(
@@ -75,7 +72,7 @@ col1, col2 = st.columns([1, 8])
 with col1:
     st.image("docugallery_logo (2).png", width=150)
 with col2:
-    st.title("AskMyDocs")
+    st.title("DocuGallery")
     
 st.caption("Upload documents, then ask questions about them.")\
     
